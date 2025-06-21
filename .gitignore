@@ -1,0 +1,11 @@
+# Ignore macOS system files
+.DS_Store
+
+# Ignore IDE config files
+.idea/
+
+# Ignore node_modules in all directories
+**/node_modules/
+
+# Or specifically ignore node_modules in UI
+UI/node_modules/
