@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr,ConfigDict
 from datetime import date
 from typing import Optional,List
 
@@ -10,8 +10,8 @@ class Subordinate(BaseModel):
     role: str
     reporting_to: Optional[int]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
+
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -36,7 +36,6 @@ class UserOut(BaseModel):
     first_name: Optional[str]
     last_name: Optional[str]
     department: Optional[str]
-    department: Optional[str]
     designation: Optional[str]
     joining_date: Optional[date]
     phone: Optional[str]
@@ -44,9 +43,8 @@ class UserOut(BaseModel):
     subordinates: List[Subordinate] = []
 
 
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        from_attributes = True
 
 
 

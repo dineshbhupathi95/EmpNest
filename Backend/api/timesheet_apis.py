@@ -86,6 +86,9 @@ def update_timesheet_partial(timesheet_id: int, payload: dict, db: Session = Dep
 @router.get("/api/timesheet/user/{user_id}", response_model=List[TimesheetOut])
 def get_user_timesheets(user_id: int, db: Session = Depends(get_db)):
     timesheets = db.query(Timesheet).filter(Timesheet.user_id == user_id).order_by(Timesheet.week_starting.desc()).all()
+    for t in timesheets:
+        data = {k: v for k, v in t.__dict__.items() if not k.startswith('_')}
+        print(data)
     return [
         TimesheetOut(
             id=ts.id,

@@ -81,6 +81,7 @@ const TimesheetEntry = () => {
                 code: r.type === 'project' ? r.code : r.type.toUpperCase(),
                 hours_per_day: r.hours,
             })),
+            status: "Submitted"
         };
 
         const patchPayload = {
