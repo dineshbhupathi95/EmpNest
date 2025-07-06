@@ -12,40 +12,19 @@ const EmployeeDetails = () => {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    axios.get(`${config.BASE_URL}/employees`)
+    const managerId = localStorage.getItem('user_id');
+    if (!managerId) {
+      console.error('Manager ID not found in localStorage');
+      return;
+    }
+
+    axios.get(`${config.BASE_URL}/reportees/${managerId}`)
       .then(res => setEmployees(res.data))
       .catch(err => {
-        console.error("Error fetching employee data", err);
-        // Dummy fallback data
-        setEmployees([
-          {
-            id: 1,
-            name: "John Doe",
-            salary: 75000,
-            skills: ["React", "Node.js", "GraphQL"],
-            experience: 5,
-            interests: ["AI", "Cloud"],
-            email: "john@example.com",
-            phone: "9876543210",
-            address: "Bangalore, India",
-            department: "Engineering"
-          },
-          {
-            id: 2,
-            name: "Jane Smith",
-            salary: 68000,
-            skills: ["Python", "Django", "PostgreSQL"],
-            experience: 4,
-            interests: ["Data Science", "APIs"],
-            email: "jane@example.com",
-            phone: "8765432109",
-            address: "Hyderabad, India",
-            department: "Backend"
-          }
-        ]);
+        console.error("Error fetching reportees", err);
+        setEmployees([]);
       });
   }, []);
-  
 
   const handleViewDetails = (emp) => {
     setSelectedEmployee(emp);
@@ -60,21 +39,21 @@ const EmployeeDetails = () => {
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>
-              <TableCell>Salary</TableCell>
-              <TableCell>Skills</TableCell>
-              <TableCell>Experience (Years)</TableCell>
-              <TableCell>Interests</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Phone</TableCell>
+              <TableCell>Experience</TableCell>
+              <TableCell>Department</TableCell>
               <TableCell>Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {employees.map(emp => (
               <TableRow key={emp.id}>
-                <TableCell>{emp.name}</TableCell>
-                <TableCell>₹{emp.salary}</TableCell>
-                <TableCell>{emp.skills.join(', ')}</TableCell>
-                <TableCell>{emp.experience}</TableCell>
-                <TableCell>{emp.interests.join(', ')}</TableCell>
+                <TableCell>{emp.first_name} {emp.last_name}</TableCell>
+                <TableCell>{emp.email}</TableCell>
+                <TableCell>{emp.phone || '—'}</TableCell>
+                <TableCell>{emp.experience || '—'}</TableCell>
+                <TableCell>{emp.department || '—'}</TableCell>
                 <TableCell>
                   <Button size="small" onClick={() => handleViewDetails(emp)} variant="outlined">
                     View Details
@@ -86,21 +65,20 @@ const EmployeeDetails = () => {
         </Table>
       </Paper>
 
-      {/* Full Profile Modal */}
+      {/* Profile Dialog */}
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Employee Profile</DialogTitle>
         <DialogContent dividers>
           {selectedEmployee && (
             <>
-              <Typography><strong>Name:</strong> {selectedEmployee.name}</Typography>
+              <Typography><strong>Name:</strong> {selectedEmployee.first_name} {selectedEmployee.last_name}</Typography>
               <Typography><strong>Email:</strong> {selectedEmployee.email}</Typography>
-              <Typography><strong>Phone:</strong> {selectedEmployee.phone}</Typography>
-              <Typography><strong>Salary:</strong> ₹{selectedEmployee.salary}</Typography>
-              <Typography><strong>Skills:</strong> {selectedEmployee.skills.join(', ')}</Typography>
-              <Typography><strong>Experience:</strong> {selectedEmployee.experience} years</Typography>
-              <Typography><strong>Interests:</strong> {selectedEmployee.interests.join(', ')}</Typography>
-              <Typography><strong>Address:</strong> {selectedEmployee.address}</Typography>
-              <Typography><strong>Department:</strong> {selectedEmployee.department}</Typography>
+              <Typography><strong>Phone:</strong> {selectedEmployee.phone || '—'}</Typography>
+              <Typography><strong>Experience:</strong> {selectedEmployee.experience || '—'} years</Typography>
+              <Typography><strong>Department:</strong> {selectedEmployee.department || '—'}</Typography>
+              <Typography><strong>Skills:</strong> {(selectedEmployee.skills || []).join(', ')}</Typography>
+              <Typography><strong>Interests:</strong> {(selectedEmployee.interests || []).join(', ')}</Typography>
+              <Typography><strong>Address:</strong> {selectedEmployee.address || '—'}</Typography>
             </>
           )}
         </DialogContent>

@@ -7,6 +7,8 @@ from passlib.context import CryptContext
 from utils.jwt_handler import create_access_token
 from utils.permission import verify_permission
 from sqlalchemy import or_
+from typing import List
+
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -18,14 +20,23 @@ def get_db():
     finally:
         db.close()
 
+def generate_next_emp_id(db: Session) -> str:
+    last_user = db.query(user_model.User).order_by(user_model.User.id.desc()).first()
+    if last_user and last_user.emp_id and last_user.emp_id.startswith("E"):
+        last_num = int(last_user.emp_id[1:])
+        return f"E{last_num + 1}"
+    return "E100"
+
 @router.post("/api/users/", response_model=user_schema.UserOut)
 def create_user(user: user_schema.UserCreate, db: Session = Depends(get_db)):
     existing = db.query(user_model.User).filter(user_model.User.email == user.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
 
+    new_emp_id = generate_next_emp_id(db)
     hashed_password = pwd_context.hash(user.password)
     new_user = user_model.User(
+        emp_id=new_emp_id,
         email=user.email,
         hashed_password=hashed_password,
         role=user.role,
@@ -35,8 +46,8 @@ def create_user(user: user_schema.UserCreate, db: Session = Depends(get_db)):
         department=user.department,
         designation=user.designation,
         joining_date=user.joining_date,
-        reporting_to=user.reporting_to
-
+        reporting_to=user.reporting_to,
+        status=user.status or "Active"
     )
     db.add(new_user)
     db.commit()
@@ -121,3 +132,19 @@ def get_org_chart(db: Session = Depends(get_db)):
 async def protected_admin_route(request: Request):
     user = request.state.user  # Access user info if needed
     return {"message": f"Welcome {user['role']} user!", "user": user}
+
+
+
+@router.get("/api/reportees/{manager_id}", response_model=List[user_schema.UserOut])
+def get_reportees(manager_id: int, db: Session = Depends(get_db)):
+    reportees = db.query(user_model.User).filter(user_model.User.reporting_to == manager_id).all()
+    return [user_schema.UserOut.from_orm(user) for user in reportees]
+
+
+
+@router.get("/api/users/{user_id}", response_model=user_schema.UserOut)
+def get_user_by_id(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(user_model.User).filter(user_model.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
