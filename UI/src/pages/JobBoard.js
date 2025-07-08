@@ -49,7 +49,7 @@ const JobBoard = () => {
     <Box p={3}>
       <Typography variant="h5" mb={3}>In-House Job Opportunities</Typography>
       <Grid container spacing={3}>
-        {jobs?.map(job => (
+        {Array.isArray(jobs) && jobs.map(job => (
           <Grid item xs={12} md={6} key={job.id}>
             <Paper sx={{ p: 2 }}>
               <Typography variant="h6">{job.title}</Typography>

@@ -167,7 +167,7 @@ const TimesheetEntry = () => {
                                         onChange={(e) => handleChange(idx, 'code', e.target.value)}
                                         sx={{ width: 150 }}
                                     >
-                                        {projects?.map((proj) => (
+                                        {Array.isArray(projects) && projects.map((proj) => (
                                             <MenuItem key={proj.code} value={proj.code}>
                                                 {proj.code} - {proj.name}
                                             </MenuItem>
@@ -226,10 +226,10 @@ const TimesheetEntry = () => {
                         </TableHead>
                         <TableBody>
                             {previousTimesheets.map(ts => {
-                                const total = ts.entries?.reduce(
-                                    (sum, entry) => sum + Object.values(entry.hours_per_day).reduce((s, h) => s + h, 0),
-                                    0
-                                );
+                                const total = ts.entries?.reduce((sum, entry) => {
+                                    const hours = Object.values(entry.hours_per_day || {});
+                                    return sum + hours.reduce((s, h) => s + (h || 0), 0);
+                                  }, 0);
                                 return (
                                     <TableRow key={ts.id}>
                                         <TableCell>{ts.week_starting}</TableCell>
