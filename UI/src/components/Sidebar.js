@@ -21,6 +21,7 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import { Link, useLocation } from 'react-router-dom';
+import { hasAccess } from '../utils/roleAccess';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -38,14 +39,14 @@ const Sidebar = () => {
   ];
 
   const roleLinks = {
-    string: [
-      { label: 'Manage Users', icon: <PeopleIcon />, path: '/manage-users' },
-      { label: 'Org Chart', path: '/org-chart', icon: <AccountTreeIcon /> },
+    admin: [
+      { label: 'Manage Users', icon: <PeopleIcon />, path: '/manage-users' },      
+      { label: 'Reportees', path: '/reportees-view', icon: <FactCheckIcon /> },
       { label: 'Time sheet Entry', path: '/timesheet', icon: <AccessTimeIcon /> },
       { label: 'Leave Requests', icon: <AssignmentIcon />, path: '/leave' },
-      { label: 'My Profile', icon: <AccountCircleIcon />, path: '/profile' },
       { label: 'Job Board', path: '/jobs', icon: <WorkIcon /> },
-      { label: 'Reportees', path: '/reportees-view', icon: <FactCheckIcon /> },
+      { label: 'My Profile', icon: <AccountCircleIcon />, path: '/profile' },
+      { label: 'Org Chart', path: '/org-chart', icon: <AccountTreeIcon /> },
 
     ],
     hr: [
@@ -90,21 +91,38 @@ const Sidebar = () => {
       </div>
       <Divider />
       <List>
-        {navItems.map(({ label, icon, path }) => (
-          <ListItem
-            button
-            key={label}
-            component={Link}
-            to={path}
-            selected={location.pathname === path}
-          >
-            <Tooltip title={label} placement="right" disableHoverListener={isOpen}>
-              <ListItemIcon>{icon}</ListItemIcon>
-            </Tooltip>
-            {isOpen && <ListItemText primary={label} />}
-          </ListItem>
-        ))}
-      </List>
+  {navItems
+    .filter(({ label }) => hasAccess('Sidenav', label)) 
+    .map(({ label, icon, path }) => {
+      const isSelected = location.pathname === path;
+      return (
+        <ListItem
+          button
+          key={label}
+          component={Link}
+          to={path}
+          selected={isSelected}
+          sx={{
+            bgcolor: isSelected ? '#19047a' : 'transparent',
+            color: isSelected ? 'white' : 'inherit',
+            '&:hover': {
+              bgcolor: isSelected ? '#19047a' : 'action.hover',
+            },
+            '& .MuiListItemIcon-root': {
+              color: isSelected ? 'white' : 'inherit',
+            },
+          }}
+        >
+          <Tooltip title={label} placement="right" disableHoverListener={isOpen}>
+            <ListItemIcon>{icon}</ListItemIcon>
+          </Tooltip>
+          {isOpen && <ListItemText primary={label} />}
+        </ListItem>
+      );
+    })}
+</List>
+
+
     </Drawer>
   );
 };

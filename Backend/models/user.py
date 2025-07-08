@@ -1,11 +1,18 @@
-from sqlalchemy import Column, Integer, String, Boolean, Date,ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey, Enum as PgEnum
 from sqlalchemy.orm import relationship
 from database.db import Base
+import enum
+
+class EmploymentStatus(str, enum.Enum):
+    active = "Active"
+    inactive = "Inactive"
+    on_leave = "On Leave"
 
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
+    emp_id = Column(String, unique=True, index=True, nullable=True)
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     role = Column(String, nullable=False)  # admin, hr, employee
@@ -16,6 +23,7 @@ class User(Base):
     department = Column(String, nullable=True)
     designation = Column(String, nullable=True)
     joining_date = Column(Date, nullable=True)
+    status = Column(PgEnum(EmploymentStatus), default=EmploymentStatus.active)
 
 
     reporting_to = Column(Integer, ForeignKey("users.id"), nullable=True)
@@ -24,3 +32,13 @@ class User(Base):
     manager = relationship("User", remote_side=[id], backref="subordinates", uselist=False)
     timesheets = relationship("Timesheet", back_populates="user", cascade="all, delete-orphan")
 
+
+
+class RoleAccess(Base):
+    __tablename__ = "role_access"
+
+    id = Column(Integer, primary_key=True, index=True)
+    role = Column(String, index=True)
+    category = Column(String, nullable=False)
+    feature = Column(String, nullable=False)
+    is_allowed = Column(Boolean, default=True)

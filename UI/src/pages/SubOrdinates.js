@@ -1,27 +1,56 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Box, Typography, Tabs, Tab, Paper, Grid, Button, TextField,
+  Box, Typography, Tabs, Tab, Paper, Button, TextField,
   Table, TableBody, TableCell, TableHead, TableRow, Dialog,
   DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import axios from 'axios';
 import config from '../config';
+import EmployeeDetails from '../components/EmployeeDetails';
 
 const SubordinateDetails = () => {
   const [tab, setTab] = useState(0);
   const [timesheets, setTimesheets] = useState([]);
+  const [leaveRequests, setLeaveRequests] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTimesheet, setSelectedTimesheet] = useState(null);
   const [comment, setComment] = useState('');
-  console.log(timesheets,'kk')
+
   useEffect(() => {
-    const manager_id = localStorage.getItem('user_id'); // assuming user_id is stored in localStorage
+    const manager_id = localStorage.getItem('user_id');
     if (manager_id) {
       axios.get(`${config.BASE_URL}/timesheet/reportees/${manager_id}`)
         .then(res => setTimesheets(res.data))
         .catch(err => console.error("Failed to fetch timesheets", err));
+
+      axios.get(`${config.BASE_URL}/leave/reportees/${manager_id}`)
+        .then(res => setLeaveRequests(res.data))
+        .catch(err => {
+          console.error("Failed to fetch leave requests", err);
+          // Dummy fallback
+          setLeaveRequests([
+            {
+              id: 1,
+              employee: 'John Doe',
+              from_date: '2025-06-10',
+              to_date: '2025-06-12',
+              reason: 'Medical',
+              status: 'Submitted'
+            },
+            {
+              id: 2,
+              employee: 'Jane Smith',
+              from_date: '2025-06-15',
+              to_date: '2025-06-16',
+              reason: 'Personal',
+              status: 'Approved'
+            }
+          ]);
+        });
     }
   }, []);
+
+  const handleChange = (_, newTab) => setTab(newTab);
 
   const handleAction = async (id, action) => {
     try {
@@ -40,7 +69,16 @@ const SubordinateDetails = () => {
     }
   };
 
-  const handleChange = (_, newTab) => setTab(newTab);
+  const handleLeaveAction = async (id, action) => {
+    try {
+      await axios.patch(`${config.BASE_URL}/leave/${id}`, { status: action });
+      setLeaveRequests(prev =>
+        prev.map(lr => lr.id === id ? { ...lr, status: action } : lr)
+      );
+    } catch (err) {
+      console.error("Failed to update leave status", err);
+    }
+  };
 
   return (
     <Box p={4}>
@@ -48,7 +86,14 @@ const SubordinateDetails = () => {
         <Tabs value={tab} onChange={handleChange} centered>
           <Tab label="Employee Info" />
           <Tab label="Timesheet Approvals" />
+          <Tab label="Leave Requests" />
         </Tabs>
+
+        {tab === 0 && (
+          <Box mt={3}>
+            <EmployeeDetails />
+          </Box>
+        )}
 
         {tab === 1 && (
           <Box mt={3}>
@@ -92,7 +137,6 @@ const SubordinateDetails = () => {
               </TableBody>
             </Table>
 
-            {/* Review Modal */}
             <Dialog open={modalOpen} onClose={() => setModalOpen(false)} fullWidth maxWidth="sm">
               <DialogTitle>Timesheet Review</DialogTitle>
               <DialogContent dividers>
@@ -142,10 +186,54 @@ const SubordinateDetails = () => {
           </Box>
         )}
 
-        {tab === 0 && (
+        {tab === 2 && (
           <Box mt={3}>
-            <Typography variant="body1">Employee details tab placeholder</Typography>
-            {/* You can optionally integrate profile details here */}
+            <Typography variant="h6" gutterBottom>Leave Requests</Typography>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Employee</TableCell>
+                  <TableCell>From</TableCell>
+                  <TableCell>To</TableCell>
+                  <TableCell>Reason</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Action</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {leaveRequests.map(lr => (
+                  <TableRow key={lr.id}>
+                    <TableCell>{lr.employee}</TableCell>
+                    <TableCell>{lr.from_date}</TableCell>
+                    <TableCell>{lr.to_date}</TableCell>
+                    <TableCell>{lr.reason}</TableCell>
+                    <TableCell>{lr.status}</TableCell>
+                    <TableCell>
+                      {lr.status === 'Submitted' ? (
+                        <>
+                          <Button
+                            size="small"
+                            color="primary"
+                            onClick={() => handleLeaveAction(lr.id, 'Approved')}
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            size="small"
+                            color="error"
+                            onClick={() => handleLeaveAction(lr.id, 'Rejected')}
+                          >
+                            Reject
+                          </Button>
+                        </>
+                      ) : (
+                        <Button size="small" disabled>View</Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </Box>
         )}
       </Paper>

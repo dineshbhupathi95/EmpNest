@@ -1,6 +1,7 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr,ConfigDict
 from datetime import date
 from typing import Optional,List
+from enum import Enum
 
 class Subordinate(BaseModel):
     id: int
@@ -10,8 +11,13 @@ class Subordinate(BaseModel):
     role: str
     reporting_to: Optional[int]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
+
+class EmploymentStatus(str, Enum):
+    active = "Active"
+    inactive = "Inactive"
+    on_leave = "On Leave"
+    
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -26,27 +32,28 @@ class UserCreate(UserBase):
     designation: Optional[str]
     joining_date: Optional[date]
     reporting_to: Optional[int] = None
+    status: Optional[EmploymentStatus] = EmploymentStatus.active
 
 
 class UserOut(BaseModel):
     id: int
+    emp_id: str
     email: EmailStr
     role: str
     is_active: bool
     first_name: Optional[str]
     last_name: Optional[str]
     department: Optional[str]
-    department: Optional[str]
     designation: Optional[str]
     joining_date: Optional[date]
     phone: Optional[str]
     reporting_to: Optional[int]
     subordinates: List[Subordinate] = []
+    status: EmploymentStatus
 
 
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        from_attributes = True
 
 
 
@@ -70,3 +77,26 @@ class UserUpdate(BaseModel):
     designation: Optional[str]
     joining_date: Optional[date]
     reporting_to: Optional[int] = None
+
+
+# role
+class RoleAccessBase(BaseModel):
+    role: str
+    category: str
+    feature: str
+    is_allowed: bool
+
+class RoleAccessCreate(RoleAccessBase):
+    pass
+
+class RoleAccessUpdate(RoleAccessBase):
+    id: int
+
+
+class RoleAccessUpdates(BaseModel):
+    category: str
+    feature: str
+    is_allowed: bool
+
+class RoleAccessOut(RoleAccessUpdates):
+    role: str

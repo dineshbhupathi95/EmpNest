@@ -81,6 +81,7 @@ const TimesheetEntry = () => {
                 code: r.type === 'project' ? r.code : r.type.toUpperCase(),
                 hours_per_day: r.hours,
             })),
+            status: "Submitted"
         };
 
         const patchPayload = {
@@ -147,6 +148,8 @@ const TimesheetEntry = () => {
                                     value={row.type}
                                     onChange={(e) => handleChange(idx, 'type', e.target.value)}
                                     fullWidth
+                                    sx={{ width: 150 }}
+
                                 >
                                     {entryTypes.map((opt) => (
                                         <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
@@ -162,6 +165,7 @@ const TimesheetEntry = () => {
                                         label="Project Code"
                                         value={row.code}
                                         onChange={(e) => handleChange(idx, 'code', e.target.value)}
+                                        sx={{ width: 150 }}
                                     >
                                         {projects.map((proj) => (
                                             <MenuItem key={proj.code} value={proj.code}>
@@ -187,6 +191,8 @@ const TimesheetEntry = () => {
                                         inputProps={{ min: 0, max: 24 }}
                                         value={row.hours[day] || ''}
                                         onChange={(e) => handleHourChange(idx, day, e.target.value)}
+                                        sx={{ width: 70 }}
+
                                     />
                                 </Grid>
                             ))}
@@ -252,8 +258,6 @@ const TimesheetEntry = () => {
                     </Table>
                 </Box>
             </Paper>
-
-            {/* Optional: Dialog for edit mode (currently reused main form) */}
         </Box>
     );
 };

@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from typing import List, Dict, Literal,Optional
 from datetime import date
 from schemas.user_schema import UserOut
+from pydantic import ConfigDict
+
 class TimesheetEntry(BaseModel):
     type: Literal['project', 'sick', 'pto']
     code: str
@@ -22,5 +24,5 @@ class TimesheetOut(BaseModel):
     status: Optional[str]
     description: Optional[str]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
