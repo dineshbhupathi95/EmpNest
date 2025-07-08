@@ -67,7 +67,7 @@ const LeaveRequest = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {leaveData.map(row => (
+          {Array.isArray(leaveData) && leaveData.map(row => (
             <TableRow key={row.id}>
               <TableCell>{row.from}</TableCell>
               <TableCell>{row.to}</TableCell>
