@@ -167,7 +167,7 @@ const TimesheetEntry = () => {
                                         onChange={(e) => handleChange(idx, 'code', e.target.value)}
                                         sx={{ width: 150 }}
                                     >
-                                        {projects.map((proj) => (
+                                        {projects?.map((proj) => (
                                             <MenuItem key={proj.code} value={proj.code}>
                                                 {proj.code} - {proj.name}
                                             </MenuItem>
