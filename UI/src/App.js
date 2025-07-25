@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState,useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import { Box } from '@mui/material';
 
@@ -19,7 +19,8 @@ import AccessManager from './components/access_manager/AccessManager';
 import { RoleProtectedRoute } from './utils/ProtectedRoute';
 import Unauthorized from './pages/UnAuthorizedAccess';
 import NotFound from './pages/NoFoundPage';
-
+import ConfigurationPanel from './components/configuration/ConfigurationPanel';
+import config from './config';
 const isAuthenticated = () => !!localStorage.getItem('token');
 
 const ProtectedRoute = ({ children }) => {
@@ -31,17 +32,43 @@ const ProtectedRoute = ({ children }) => {
   );
 };
 
-const AppLayout = ({ children }) => (
+const AppLayout = ({ children,config }) => (
   <Box sx={{ display: 'flex', height: '100vh', bgcolor: '#f9fafb' }}>
     <Sidebar />
     <Box component="main" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-      <Topbar />
+    <Topbar orgName={config.orgName} topbarColor={config.topbarColor}   logo={config.logo} />
       <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>{children}</Box>
     </Box>
   </Box>
 );
 
 function App() {
+  const [configurl, setConfigUrl] = useState({
+    orgName: '',
+    topbarColor: '',
+    logo: null
+  });
+  
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    console.log(config.BASE_URL,'lll')
+    fetch(`${config.BASE_URL}/config`)
+      .then((res) => res.json())
+      .then((data) => {
+        setConfigUrl({
+          orgName: data.org_name,
+          topbarColor: data.topbar_color,
+          logo: data.logo_url
+        });
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Failed to load config', err);
+        setLoading(false);
+      });
+  }, []);
+  
   return (
     <Router>
       <Routes>
@@ -56,7 +83,7 @@ function App() {
           path="*"
           element={
             <ProtectedRoute>
-              <AppLayout>
+              <AppLayout config={configurl}>
                 <Routes>
                   {/* <Route path="/" element={<HRDashboard />} /> */}
                   <Route
@@ -123,6 +150,14 @@ function App() {
                     </RoleProtectedRoute>
                   }
                   />
+                  <Route
+            path="/config"
+            element={
+              <RoleProtectedRoute category="Sidenav" feature="Configuration">
+                <ConfigurationPanel onConfigChange={setConfigUrl} />
+              </RoleProtectedRoute>
+            }
+          />
                   <Route path="/not-authorized" element={<Unauthorized />} />
 
                   <Route path="*" element={<NotFound />} />

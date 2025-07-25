@@ -10,41 +10,34 @@ import {
   Box
 } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { useNavigate } from 'react-router-dom'; 
+import config from '../config';
 
-const Topbar = () => {
+const Topbar = ({ orgName = 'EmpNest', topbarColor = '#19047a',logo }) => {
   const [anchorEl, setAnchorEl] = useState(null);
-  const navigate = useNavigate();
 
-
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
+  const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
+  const handleMenuClose = () => setAnchorEl(null);
   const handleProfile = () => {
     handleMenuClose();
-    // navigate or open profile
     alert('View Profile clicked');
   };
-
   const handleLogout = () => {
     handleMenuClose();
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    localStorage.removeItem('user_id');
+    localStorage.clear();
     window.location.href = '/login';
-    };
+  };
 
   return (
-    <AppBar position="static" sx={{ background: '#19047a', mb: 2 }}>
+    <AppBar position="static" sx={{ background: topbarColor, mb: 2 }}>
       <Toolbar sx={{ justifyContent: 'space-between' }}>
-        <Typography variant="h6" component="div">
-          EmpNest
-        </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {logo && (
+            <img src={`${config.BASE_URL}${logo}`} alt="Logo" style={{ height: 60, borderRadius: 32,width:60 }} />
+          )}
+          <Typography variant="h6" component="div">
+            {orgName}
+          </Typography>
+        </Box>
 
         <Box>
           <IconButton color="inherit" onClick={handleMenuOpen}>
