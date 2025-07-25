@@ -100,3 +100,13 @@ class RoleAccessUpdates(BaseModel):
 
 class RoleAccessOut(RoleAccessUpdates):
     role: str
+
+
+
+class ConfigUpdate(BaseModel):
+    org_name: str
+    topbar_color: str
+    logo_url: str | None = None
+
+class ConfigOut(ConfigUpdate):
+    id: int

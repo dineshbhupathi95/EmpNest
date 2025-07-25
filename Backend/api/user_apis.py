@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException,Request
+from fastapi import APIRouter, Depends, HTTPException,Request,UploadFile, File, Form
 from sqlalchemy.orm import Session,joinedload
 from models import user as user_model
 from schemas import user_schema
@@ -8,7 +8,8 @@ from utils.jwt_handler import create_access_token
 from utils.permission import verify_permission
 from sqlalchemy import or_
 from typing import List
-
+import shutil
+import os
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -148,3 +149,41 @@ def get_user_by_id(user_id: int, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+# Configuration APIs
+
+@router.get("/api/config", response_model=user_schema.ConfigOut)
+def get_config(db: Session = Depends(get_db)):
+    config = db.query(user_model.AppConfig).first()
+    if not config:
+        config = user_model.AppConfig()
+        db.add(config)
+        db.commit()
+        db.refresh(config)
+    return config
+
+@router.post("/api/config")
+def update_config(
+    org_name: str = Form(...),
+    topbar_color: str = Form(...),
+    logo: UploadFile = File(None),
+    db: Session = Depends(get_db)
+):
+    config = db.query(user_model.AppConfig).first()
+    if not config:
+        config = user_model.AppConfig()
+        db.add(config)
+        db.commit()
+        db.refresh(config)
+
+    config.org_name = org_name
+    config.topbar_color = topbar_color
+
+    if logo:
+        logo_path = f"static/logos/{logo.filename}"
+        with open(logo_path, "wb") as f:
+            shutil.copyfileobj(logo.file, f)
+        config.logo_url = f"/{logo_path}"
+
+    db.commit()
+    return {"message": "Configuration updated successfully"}

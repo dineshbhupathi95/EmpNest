@@ -42,3 +42,13 @@ class RoleAccess(Base):
     category = Column(String, nullable=False)
     feature = Column(String, nullable=False)
     is_allowed = Column(Boolean, default=True)
+
+
+
+class AppConfig(Base):
+    __tablename__ = "app_config"
+
+    id = Column(Integer, primary_key=True, index=True)
+    org_name = Column(String, default="EmpNest")
+    topbar_color = Column(String, default="#19047a")
+    logo_url = Column(String, nullable=True)
