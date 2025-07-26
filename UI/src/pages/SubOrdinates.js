@@ -7,7 +7,7 @@ import {
 import axios from 'axios';
 import config from '../config';
 import EmployeeDetails from '../components/EmployeeDetails';
-
+import ManagerLeaveRequestsView from '../components/SubOrdinate/ManagerLeaveView';
 const SubordinateDetails = () => {
   const [tab, setTab] = useState(0);
   const [timesheets, setTimesheets] = useState([]);
@@ -15,10 +15,13 @@ const SubordinateDetails = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTimesheet, setSelectedTimesheet] = useState(null);
   const [comment, setComment] = useState('');
+  const [managerId,setManagerId] = useState('');
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
     const manager_id = localStorage.getItem('user_id');
     if (manager_id) {
+      setManagerId(manager_id)
       axios.get(`${config.BASE_URL}/timesheet/reportees/${manager_id}`)
         .then(res => setTimesheets(res.data))
         .catch(err => console.error("Failed to fetch timesheets", err));
@@ -187,54 +190,9 @@ const SubordinateDetails = () => {
         )}
 
         {tab === 2 && (
-          <Box mt={3}>
-            <Typography variant="h6" gutterBottom>Leave Requests</Typography>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Employee</TableCell>
-                  <TableCell>From</TableCell>
-                  <TableCell>To</TableCell>
-                  <TableCell>Reason</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Action</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {leaveRequests.map(lr => (
-                  <TableRow key={lr.id}>
-                    <TableCell>{lr.employee}</TableCell>
-                    <TableCell>{lr.from_date}</TableCell>
-                    <TableCell>{lr.to_date}</TableCell>
-                    <TableCell>{lr.reason}</TableCell>
-                    <TableCell>{lr.status}</TableCell>
-                    <TableCell>
-                      {lr.status === 'Submitted' ? (
-                        <>
-                          <Button
-                            size="small"
-                            color="primary"
-                            onClick={() => handleLeaveAction(lr.id, 'Approved')}
-                          >
-                            Approve
-                          </Button>
-                          <Button
-                            size="small"
-                            color="error"
-                            onClick={() => handleLeaveAction(lr.id, 'Rejected')}
-                          >
-                            Reject
-                          </Button>
-                        </>
-                      ) : (
-                        <Button size="small" disabled>View</Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Box>
+          // <TabPanel value={tab} index={2}>
+          <ManagerLeaveRequestsView managerId={managerId} token={token} />
+        // </TabPanel>
         )}
       </Paper>
     </Box>

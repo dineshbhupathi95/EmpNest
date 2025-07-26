@@ -1,7 +1,6 @@
 import React, { useState,useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import { Box } from '@mui/material';
-
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import HRDashboard from './pages/Dashboard';
@@ -103,7 +102,7 @@ function App() {
                   />
                   <Route path="/leave" 
                   element={
-                    <RoleProtectedRoute category="Sidenav" feature="Leave Request">
+                    <RoleProtectedRoute category="Sidenav" feature="Leave Requests">
                       <LeaveRequest />
                     </RoleProtectedRoute>
                   }
