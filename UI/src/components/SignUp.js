@@ -10,7 +10,7 @@ import axios from 'axios';
 import config from '../config';
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 
-const roles = ['Admin', 'HR', 'Employee'];
+const roles = ['admin', 'hr', 'employee'];
 const statuses = ['Active', 'Inactive'];
 
 const Signup = () => {
