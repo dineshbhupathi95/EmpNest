@@ -8,8 +8,17 @@ import {
   TextField,
   Alert,
   Fade,
+  useMediaQuery,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  useTheme
 } from '@mui/material';
 import { motion } from 'framer-motion';
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
 import { Link } from 'react-router-dom';
 import Lottie from 'lottie-react';
 import hrAnimation from './static/assets/hr-animation.json';
@@ -24,12 +33,19 @@ const HrLandingPage = () => {
   const homeRef = useRef(null);
   const aboutRef = useRef(null);
   const contactRef = useRef(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const scrollToSection = (section) => {
-    const refs = { home: homeRef, about: aboutRef, contact: contactRef };
-    refs[section]?.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToSection = (sectionId) => {
+    setActiveSection(sectionId);
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
+  
   useEffect(() => {
     const handleScroll = () => {
       const homeTop = homeRef.current.getBoundingClientRect().top;
@@ -87,18 +103,20 @@ const HrLandingPage = () => {
     >
       {/* Top Bar */}
       <AppBar position="fixed" color="default" elevation={1}>
-        <Toolbar sx={{ justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Box
-              component="img"
-              src={app_logo}
-              alt="Company Logo"
-              sx={{ height: 40, mr: 1 }}
-            />
-            <Typography variant="h6" fontWeight="bold" color="primary">
-              EmpNest
-            </Typography>
-          </Box>
+      <Toolbar sx={{ justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box
+            component="img"
+            src={app_logo}
+            alt="Company Logo"
+            sx={{ height: 40, mr: 1 }}
+          />
+          <Typography variant="h6" fontWeight="bold" color="primary">
+            EmpNest
+          </Typography>
+        </Box>
+
+        {!isMobile ? (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Button onClick={() => scrollToSection('home')} sx={navButtonStyle('home')}>
               Home
@@ -113,8 +131,39 @@ const HrLandingPage = () => {
               Sign In / Sign Up
             </Button>
           </Box>
-        </Toolbar>
-      </AppBar>
+        ) : (
+          <>
+            <IconButton onClick={() => setDrawerOpen(true)} edge="end">
+              <MenuIcon />
+            </IconButton>
+
+            <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+              <Box sx={{ width: 250 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 1 }}>
+                  <IconButton onClick={() => setDrawerOpen(false)}>
+                    <CloseIcon />
+                  </IconButton>
+                </Box>
+                <List>
+                  <ListItem button onClick={() => { scrollToSection('home'); setDrawerOpen(false); }}>
+                    <ListItemText primary="Home" />
+                  </ListItem>
+                  <ListItem button onClick={() => { scrollToSection('about'); setDrawerOpen(false); }}>
+                    <ListItemText primary="About" />
+                  </ListItem>
+                  <ListItem button onClick={() => { scrollToSection('contact'); setDrawerOpen(false); }}>
+                    <ListItemText primary="Contact" />
+                  </ListItem>
+                  <ListItem button component={Link} to="/login" onClick={() => setDrawerOpen(false)}>
+                    <ListItemText primary="Sign In / Sign Up" />
+                  </ListItem>
+                </List>
+              </Box>
+            </Drawer>
+          </>
+        )}
+      </Toolbar>
+    </AppBar>
 
       <Box sx={{ height: 64 }} />
 
