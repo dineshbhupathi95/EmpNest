@@ -20,6 +20,11 @@ import Unauthorized from './pages/UnAuthorizedAccess';
 import NotFound from './pages/NoFoundPage';
 import ConfigurationPanel from './components/configuration/ConfigurationPanel';
 import config from './config';
+import HrLandingPage from './LandingPage';
+import Signup from './components/SignUp';
+import About from './components/AppDetails/About';
+import Contact from './components/AppDetails/Contact';
+import Dashboard from './components/Dashboard';
 const isAuthenticated = () => !!localStorage.getItem('token');
 
 const ProtectedRoute = ({ children }) => {
@@ -74,7 +79,7 @@ function App() {
         <Route
           path="/login"
           element={
-            isAuthenticated() ? <Navigate to="/" replace /> : <Login />
+            isAuthenticated() ? <Navigate to="/dashbaord" replace /> : <Login />
           }
         />
 
@@ -157,7 +162,9 @@ function App() {
               </RoleProtectedRoute>
             }
           />
-                  <Route path="/not-authorized" element={<Unauthorized />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+
+                  <Route path="/not-authorized" element={<Unauthorized />} />                  
 
                   <Route path="*" element={<NotFound />} />
                 </Routes>
@@ -165,6 +172,11 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/" element={<HrLandingPage />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/about" element={<About />} />
+      <Route path="/contact" element={<Contact />} />
+
       </Routes>
     </Router>
   );

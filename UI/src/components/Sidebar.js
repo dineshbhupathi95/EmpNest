@@ -40,6 +40,7 @@ const Sidebar = () => {
 
   const roleLinks = {
     admin: [
+      { label: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },      
       { label: 'Manage Users', icon: <PeopleIcon />, path: '/manage-users' },      
       { label: 'Reportees', path: '/reportees-view', icon: <FactCheckIcon /> },
       { label: 'Time sheet Entry', path: '/timesheet', icon: <AccessTimeIcon /> },

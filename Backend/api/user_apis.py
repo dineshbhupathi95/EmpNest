@@ -24,7 +24,8 @@ def get_db():
 def generate_next_emp_id(db: Session) -> str:
     last_user = db.query(user_model.User).order_by(user_model.User.id.desc()).first()
     if last_user and last_user.emp_id and last_user.emp_id.startswith("E"):
-        last_num = int(last_user.emp_id[1:])
+        print(last_user.emp_id[1:])
+        last_num = int(last_user.emp_id[3:])
         return f"E{last_num + 1}"
     return "E100"
 

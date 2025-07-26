@@ -24,7 +24,7 @@ const Topbar = ({ orgName = 'EmpNest', topbarColor = '#19047a',logo }) => {
   const handleLogout = () => {
     handleMenuClose();
     localStorage.clear();
-    window.location.href = '/login';
+    window.location.href = '/';
   };
 
   return (
