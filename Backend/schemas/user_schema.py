@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr,ConfigDict
-from datetime import date
+from datetime import date,datetime
 from typing import Optional,List
 from enum import Enum
 
@@ -110,3 +110,33 @@ class ConfigUpdate(BaseModel):
 
 class ConfigOut(ConfigUpdate):
     id: int
+
+
+
+# Leave request schema
+class LeaveStatus(str, Enum):
+    pending = "Pending"
+    approved = "Approved"
+    rejected = "Rejected"
+
+class LeaveType(str, Enum):
+    paid = "Paid"
+    unpaid = "Unpaid"
+    
+class LeaveRequestCreate(BaseModel):
+    start_date: date
+    end_date: date
+    reason: Optional[str] = None
+
+class LeaveRequestOut(BaseModel):
+    id: int
+    start_date: date
+    end_date: date
+    reason: Optional[str]
+    status: LeaveStatus
+    leave_type: LeaveType
+    created_at: datetime
+    manager_id: Optional[int]
+    user: Optional[UserOut]
+
+    model_config = ConfigDict(from_attributes=True)

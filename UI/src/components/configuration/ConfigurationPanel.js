@@ -1,99 +1,127 @@
-import React, { useState,useEffect } from 'react';
-import { TextField, Button, Box, Typography, InputLabel } from '@mui/material';
-import { SketchPicker } from 'react-color';
-import config from '../../config';
+import React, { useEffect, useState } from "react";
+import { Box, Button, Input, TextField, Typography } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import { notification } from 'antd';
+import CircularProgress from '@mui/material/CircularProgress';
 
-const ConfigurationPanel = ({ onConfigChange }) => {
-  const [orgName, setOrgName] = useState('');
-  const [topbarColor, setTopbarColor] = useState('');
-  const [logo, setLogo] = useState(null);
-  const [logoPreview, setLogoPreview] = useState(null);
+import 'antd/dist/reset.css';
+import app_logo from '../../static/images/empnest.jpg'
+import axios from "axios";
+import config from "../../config";
+import { setLogo, setOrgName, setTopbarColor, setLogoPreview } from '../../app-redux-store/ConfigSlice'
+const ConfigurationPanel = () => {
+  const dispatch = useDispatch();
+  const { orgName, topbarColor, logo, logoPreview } = useSelector((state) => state.config);
+  const [localOrgName, setLocalOrgName] = useState(orgName);
+  const [localTopbarColor, setLocalTopbarColor] = useState(topbarColor);
+  const [logoFile, setLogoFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+
   useEffect(() => {
-    console.log(config.BASE_URL,'lll')
-    fetch(`${config.BASE_URL}/config`)
-      .then((res) => res.json())
-      .then((data) => {
-        
-          setOrgName(data.org_name)
-          setTopbarColor(data.topbar_color)
-          setLogo(data.logo_url)
+    axios.get(`${config.BASE_URL}/config`)
+      .then(res => {
+        const data = res.data;
+        dispatch(setOrgName(data.org_name??"EmpNEst"));
+        dispatch(setTopbarColor(data.topbar_color??"#1976d2"));
+        dispatch(setLogo(data.logo??app_logo));  // Ensure this is a string URL
       })
-      .catch((err) => {
-        console.error('Failed to load config', err);
-      });
-  }, []);
+      .catch(err => console.error("Failed to load config:", err));
+  }, [dispatch]);
+
   const handleLogoChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setLogo(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreview(reader.result); // Base64 preview
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file) return;
+    setLogoFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      dispatch(setLogoPreview(reader.result));  // Base64 preview
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleApply = async () => {
+  const handleSubmit = async () => {
+    setLoading(true);
     const formData = new FormData();
-    formData.append('org_name', orgName);
-    formData.append('topbar_color', topbarColor);
-    if (logo) formData.append('logo', logo);
+    formData.append("org_name", localOrgName);
+    formData.append("topbar_color", localTopbarColor);
+    if (logoFile) {
+      formData.append("logo", logoFile);
+    }
   
-    const response = await fetch(`${config.BASE_URL}/config`, {
-      method: 'POST',
-      body: formData
-    });
+    try {
+      const res = await axios.post(`${config.BASE_URL}/config`, formData);
   
-    if (response.ok) {
-      const updated = await fetch(`${config.BASE_URL}/config`).then(res => res.json());
-      onConfigChange({
-        orgName: updated.org_name,
-        topbarColor: updated.topbar_color,
-        logo: updated.logo_url
+      dispatch(setOrgName(res.data.org_name));
+      dispatch(setTopbarColor(res.data.topbar_color));
+      dispatch(setLogo(res.data.logo));
+      dispatch(setLogoPreview(null));
+  
+      notification.success({
+        message: "Success",
+        description: "Organization settings updated successfully!",
+        placement: "topRight",
       });
-      alert('Configuration updated!');
-    } else {
-      alert('Failed to update config');
+    } catch (err) {
+      console.error("Failed to save config:", err);
+  
+      notification.error({
+        message: "Error",
+        description: "Failed to update settings. Please try again.",
+        placement: "topRight",
+      });
+    } finally {
+      setLoading(false);
     }
   };
   
+
 
   return (
-    <Box sx={{ p: 2, border: '1px solid #ccc', borderRadius: 2, mt: 2 }}>
-      <Typography variant="h6" gutterBottom>Configuration Panel</Typography>
+    <Box p={3}>
+      <Typography variant="h5" mb={2}>Configuration Panel</Typography>
 
       <TextField
-        fullWidth
         label="Organization Name"
-        value={orgName}
-        onChange={(e) => setOrgName(e.target.value)}
-        sx={{ mb: 2 }}
+        value={localOrgName}
+        onChange={(e) => setLocalOrgName(e.target.value)}
+        fullWidth
+        margin="normal"
       />
 
-      <InputLabel sx={{ mb: 1 }}>Topbar Color</InputLabel>
-      <SketchPicker
-        color={topbarColor}
-        onChangeComplete={(color) => setTopbarColor(color.hex)}
+      <TextField
+        label="Topbar Color"
+        type="color"
+        value={localTopbarColor}
+        onChange={(e) => setLocalTopbarColor(e.target.value)}
+        fullWidth
+        margin="normal"
       />
 
-<Box sx={{ mt: 3 }}>
-  <InputLabel>Upload Logo</InputLabel>
-  <input type="file" accept="image/*" onChange={handleLogoChange} />
-  
-  <Box mt={2}>
-    <img
-      src={logoPreview || `${config.BASE_URL}${logo}`}
-      alt="Logo"
-      style={{ height: 50, borderRadius: 8 }}
-    />
-  </Box>
-</Box>
+      <Box mt={2}>
+        <Input type="file" onChange={handleLogoChange} />
+        {(logoPreview || logo) && (
+          <Box mt={2}>
+            <img
+              src={logoPreview || (typeof logo === "string" ? `${config.BASE_URL}${logo}` : "")}
+              alt="Logo"
+              style={{ height: 50, borderRadius: 8 }}
+              onError={(e) => { e.target.style.display = "none"; }}
+            />
+          </Box>
+        )}
+      </Box>
 
-
-      <Button variant="contained" sx={{ mt: 3 }} onClick={handleApply}>
-        Apply Changes
-      </Button>
+      <Box mt={3}>
+      <Button
+  variant="contained"
+  sx={{ mt: 3, position: 'relative' }}
+  onClick={handleSubmit}
+  disabled={loading}
+>
+  {loading ? <CircularProgress size={24} sx={{ color: 'white' }} /> : "Save Configuration"}
+</Button>
+      </Box>
     </Box>
   );
 };
