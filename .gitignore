@@ -9,3 +9,19 @@
 
 # Or specifically ignore node_modules in UI
 UI/node_modules/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.python-version
+
+# Virtual Environment
+venv/
+Backend/venv/
+
+# Database
+*.db
+# Env
+.env
