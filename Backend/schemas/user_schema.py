@@ -77,7 +77,7 @@ class UserUpdate(BaseModel):
     designation: Optional[str]
     joining_date: Optional[date]
     reporting_to: Optional[int] = None
-
+    status: Optional[EmploymentStatus] = EmploymentStatus.active
 
 # role
 class RoleAccessBase(BaseModel):

@@ -28,7 +28,8 @@ const ManageUsers = () => {
         department: '',
         designation: '',
         joining_date: '',
-        reporting_to: 0
+        reporting_to: 0,
+        status:''
     });
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -84,6 +85,7 @@ const ManageUsers = () => {
                 designation: user.designation,
                 joining_date: user.joining_date,
                 reporting_to: user.reporting_to || 0,
+                status: user.status
             });
         } else {
             setForm({
@@ -96,7 +98,8 @@ const ManageUsers = () => {
                 department: '',
                 designation: '',
                 joining_date: '',
-                reporting_to: 0
+                reporting_to: 0,
+                status:''
             });
         }
         setDialogOpen(true);
@@ -208,6 +211,7 @@ const ManageUsers = () => {
                 <DialogTitle>{editUser ? 'Edit User' : 'Add User'}</DialogTitle>
                 <DialogContent>
                     <TextField label="First Name" fullWidth margin="dense" value={form.first_name} onChange={e => setForm({ ...form, first_name: e.target.value })} />
+                    <TextField label="User Status" fullWidth margin="dense" value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} />
                     <TextField label="Last Name" fullWidth margin="dense" value={form.last_name} onChange={e => setForm({ ...form, last_name: e.target.value })} />
                     <TextField label="Email" fullWidth margin="dense" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
                     <TextField label="Role" fullWidth margin="dense" value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} />

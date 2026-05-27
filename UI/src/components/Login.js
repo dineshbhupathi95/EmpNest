@@ -29,28 +29,34 @@ const Login = () => {
     setLoading(true);
     try {
       const res = await axios.post(`${config.BASE_URL}/login`, { email, password });
-      const token = res.data.access_token;
+      // console.log(res.data)
+      if (res?.data?.status_code == 200){
+        const token = res.data.access_token;
+            localStorage.setItem('token', token);
+            localStorage.setItem('role', res.data.role);
+            localStorage.setItem('user_id', res.data.user_id);
+            localStorage.setItem('savedEmail', email);
+            localStorage.setItem('savedPassword', password);
 
-      localStorage.setItem('token', token);
-      localStorage.setItem('role', res.data.role);
-      localStorage.setItem('user_id', res.data.user_id);
-      localStorage.setItem('savedEmail', email);
-      localStorage.setItem('savedPassword', password);
+            const decodedToken = jwtDecode(token);
+            const role = decodedToken.role;
 
-      const decodedToken = jwtDecode(token);
-      const role = decodedToken.role;
+            const accessResponse = await axios.get(`${config.BASE_URL}/access/${role}`);
+            const accessMatrix = {};
 
-      const accessResponse = await axios.get(`${config.BASE_URL}/access/${role}`);
-      const accessMatrix = {};
+            accessResponse.data.forEach(({ category, feature, is_allowed }) => {
+              if (!accessMatrix[category]) accessMatrix[category] = {};
+              accessMatrix[category][feature] = is_allowed;
+            });
 
-      accessResponse.data.forEach(({ category, feature, is_allowed }) => {
-        if (!accessMatrix[category]) accessMatrix[category] = {};
-        accessMatrix[category][feature] = is_allowed;
-      });
-
-      localStorage.setItem('roleAccess', JSON.stringify(accessMatrix));
-      navigate('/dashboard');
+            localStorage.setItem('roleAccess', JSON.stringify(accessMatrix));
+            navigate('/dashboard');
+      }
+      else{
+        setError(res.data.detail)
+      }
     } catch (err) {
+      console.log(err)
       setError('Invalid credentials');
     } finally {
       setLoading(false);

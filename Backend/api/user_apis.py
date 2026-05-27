@@ -57,7 +57,7 @@ def create_user(user: user_schema.UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 
-@router.post("/api/login", response_model=user_schema.TokenResponse)
+@router.post("/api/login")
 def login(credentials: user_schema.UserLogin, db: Session = Depends(get_db)):
     user = db.query(user_model.User).filter(user_model.User.email == credentials.email).first()
     if not user:
@@ -65,7 +65,10 @@ def login(credentials: user_schema.UserLogin, db: Session = Depends(get_db)):
     
     if not pwd_context.verify(credentials.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid email or password")
-    
+
+    if user.status != user_schema.EmploymentStatus.active:
+        return HTTPException(status_code=400, detail="Inactive user")
+
     token_data = {
         "sub": user.email,
         "id": user.id,
@@ -73,6 +76,7 @@ def login(credentials: user_schema.UserLogin, db: Session = Depends(get_db)):
     }
     access_token = create_access_token(token_data)
     return {
+        "status_code": 200,
         "access_token": access_token,
         "token_type": "bearer",
         "role": user.role,

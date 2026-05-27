@@ -14,6 +14,9 @@ class TimesheetCreate(BaseModel):
     week_starting: date
     entries: List[TimesheetEntry]
     status: Optional[str]
+    from_date: date
+    to_date: date
+
 
 class TimesheetOut(BaseModel):
     id: int
@@ -23,6 +26,8 @@ class TimesheetOut(BaseModel):
     entries: Optional[List[TimesheetEntry]]
     status: Optional[str]
     description: Optional[str]
+    from_date: date
+    to_date: date
 
     model_config = ConfigDict(from_attributes=True)
 

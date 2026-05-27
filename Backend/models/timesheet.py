@@ -11,7 +11,8 @@ class Timesheet(Base):
     entries = Column(JSON, nullable=False)
     status = Column(String, nullable=True, default="Submitted")
     description = Column(String, nullable=True)
-    
+    from_date = Column(Date, nullable=False)
+    to_date = Column(Date, nullable=False)
     user = relationship("User", back_populates="timesheets")
 
     @property
